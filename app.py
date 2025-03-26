@@ -18,52 +18,36 @@ st.write("This app predicts whether a patient has diabetes based on input sympto
 
 # Sidebar - Input Features
 st.sidebar.header("Input Features")
-# Define the features expected by your model.
-# (Adjust the list if your training used different or additional features.)
+
+# Define the exact features the model expects
 features = [
-    "Polyuria", 
-    "Polydipsia", 
-    "sudden weight loss", 
-    "weakness", 
-    "Polyphagia", 
-    "Genital thrush", 
-    "visual blurring", 
-    "Itching", 
-    "Irritability", 
-    "delayed healing", 
-    "partial paresis", 
-    "muscle stiffness", 
-    "Alopecia", 
-    "Obesity"
+    "Polyuria", "Polydipsia", "sudden weight loss", "weakness", "Polyphagia",
+    "Genital thrush", "visual blurring", "Itching", "Irritability",
+    "delayed healing", "partial paresis", "muscle stiffness", "Alopecia", "Obesity"
 ]
 
-# Create input widgets for each feature.
-# We assume a binary input for each symptom: Yes (1) or No (0)
-input_data = {}
-for feature in features:
-    input_data[feature] = st.sidebar.radio(feature, ("No", "Yes"))
+# Create input widgets for each feature (Yes=1, No=0)
+input_data = {feature: st.sidebar.radio(feature, ["No", "Yes"]) for feature in features}
 
-# Convert Yes/No inputs to 0/1 format in the correct order.
+# Convert Yes/No inputs to 0/1 format
 input_features = [1 if input_data[feat] == "Yes" else 0 for feat in features]
-
-# (Optional) If you wish to include additional numerical inputs, for example Age:
-# age = st.sidebar.slider("Age", 0, 100, 50)
-# Then, if Age was used in your training, insert it at the appropriate position:
-# input_features.insert(0, age)
 
 # Predict button
 if st.sidebar.button("Predict"):
-    # Reshape input features for prediction
+    # Reshape input for prediction
     input_array = np.array(input_features).reshape(1, -1)
-    
-    # Make prediction
-    prediction = model.predict(input_array)[0]
-    
-    # (Optional) Get prediction probability
-    # prob = model.predict_proba(input_array)[0][prediction]
-    
-    # Display result
-    if prediction == 1:
-        st.error("The model predicts that the patient has diabetes.")
+
+    # Debugging - Check input shape
+    expected_features = model.coef_.shape[1]  # Expected number of features
+    st.write(f"Input shape: {input_array.shape}, Model expects: {expected_features}")
+
+    if input_array.shape[1] != expected_features:
+        st.error(f"Feature mismatch! Expected {expected_features}, but got {input_array.shape[1]}.")
     else:
-        st.success("The model predicts that the patient does not have diabetes.")
+        prediction = model.predict(input_array)[0]
+
+        # Display result
+        if prediction == 1:
+            st.error("The model predicts that the patient has diabetes.")
+        else:
+            st.success("The model predicts that the patient does not have diabetes.")
