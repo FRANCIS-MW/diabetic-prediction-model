@@ -18,36 +18,38 @@ st.write("This app predicts whether a patient has diabetes based on input sympto
 
 # Sidebar - Input Features
 st.sidebar.header("Input Features")
-
-# Define the exact features the model expects
+# List only the 10 features used during training.
 features = [
-    "Polyuria", "Polydipsia", "sudden weight loss", "weakness", "Polyphagia",
-    "Genital thrush", "visual blurring", "Itching", "Irritability",
-    "delayed healing", "partial paresis", "muscle stiffness", "Alopecia", "Obesity"
+    "Polyuria", 
+    "Polydipsia", 
+    "weakness", 
+    "Polyphagia", 
+    "visual blurring", 
+    "delayed healing", 
+    "partial paresis", 
+    "muscle stiffness", 
+    "Alopecia", 
+    "Obesity"
 ]
 
-# Create input widgets for each feature (Yes=1, No=0)
-input_data = {feature: st.sidebar.radio(feature, ["No", "Yes"]) for feature in features}
+# Create input widgets for each feature (assume binary Yes/No inputs)
+input_data = {}
+for feature in features:
+    input_data[feature] = st.sidebar.radio(feature, ("No", "Yes"))
 
-# Convert Yes/No inputs to 0/1 format
+# Convert Yes/No inputs to binary (0/1)
 input_features = [1 if input_data[feat] == "Yes" else 0 for feat in features]
 
-# Predict button
+# Predict when button is clicked
 if st.sidebar.button("Predict"):
-    # Reshape input for prediction
+    # Reshape input for the model
     input_array = np.array(input_features).reshape(1, -1)
-
-    # Debugging - Check input shape
-    expected_features = model.coef_.shape[1]  # Expected number of features
-    st.write(f"Input shape: {input_array.shape}, Model expects: {expected_features}")
-
-    if input_array.shape[1] != expected_features:
-        st.error(f"Feature mismatch! Expected {expected_features}, but got {input_array.shape[1]}.")
+    
+    # Make prediction
+    prediction = model.predict(input_array)[0]
+    
+    # Display result
+    if prediction == 1:
+        st.error("The model predicts that the patient has diabetes.")
     else:
-        prediction = model.predict(input_array)[0]
-
-        # Display result
-        if prediction == 1:
-            st.error("The model predicts that the patient has diabetes.")
-        else:
-            st.success("The model predicts that the patient does not have diabetes.")
+        st.success("The model predicts that the patient does not have diabetes.")
